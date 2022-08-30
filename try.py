@@ -1,3 +1,5 @@
+#This file need to be removed
+
 file = open('employees.txt', "r")
 content = file.readlines()
 

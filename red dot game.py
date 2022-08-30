@@ -286,7 +286,7 @@ def click_check(last_score,score):
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-        if score > last_score:#gjge
+        if score > last_score:
             continue
         else:
             run = False
