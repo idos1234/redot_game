@@ -1,8 +1,11 @@
 from threading import Thread
+import threading
 import pygame
 import time
 import random
 pygame.init()
+lock = threading.Lock()
+
 
 # window size
 
@@ -42,8 +45,9 @@ content = file.readlines()
 
 # objects position
 
-red_dot_x = random.randint(0, 800)
-red_dot_y = random.randint(0, 500)
+red_dot_x = random.randint(25, 800)
+red_dot_y = random.randint(25, 500)
+
 
 # when the game started
 
@@ -108,7 +112,7 @@ def new_user():
                             if name == user_text:
                                 score_text = score
                                 run4 = False
-                            main_menu()
+                                main_menu()
                             pygame.display.update
                         score_text = "0"
                         separator([(user_text+'||'+score_text)])
@@ -209,8 +213,6 @@ def main_menu():
 def rule():
     run2 = True
     while run2:
-        pygame.time.delay(30)
-        pygame.display.set_caption("Rules: ")
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -250,11 +252,35 @@ def rule():
 
             pygame.display.update()
 
+def red_dot_position():
+    global red_dot_x
+    global red_dot_y
+    global t_wait
+    run3 = True
+    t_wait = 1.5
+    while run3:
+        pygame.time.delay(30)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+        win.blit(background,(0,0))
+        win.blit(red_dot,(red_dot_x,red_dot_y))               
+        red_dot_x = random.randint(25, 800)
+        red_dot_y = random.randint(25, 500)
+        win.blit(background,(0,0))
+        win.blit(red_dot,(red_dot_x,red_dot_y))
+        last_score = score
+        t_wait -= 0.01
+        time.sleep(t_wait)
+        click_check(last_score,score)
+        pygame.display.update()
+
+
+
+
 def the_game():
-    global run3
-    global run
     global score
-    run = True
     run3 = True
     score = 0
     win.blit(background,(0,0))
@@ -266,7 +292,7 @@ def the_game():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
+                
             mouse_buttons = pygame.mouse.get_pressed()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -275,87 +301,23 @@ def the_game():
                     if my <= red_dot_y + 50 and my >= red_dot_y:
                         if mx >= red_dot_x and mx <= red_dot_x + 50:
                             score += 1
-
-        pygame.display.update()
+        
+            pygame.display.update()
 
 def click_check(last_score,score):
     run = True
-    t_wait = 1.5
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
         if score > last_score:
+            run = False
             continue
         else:
             run = False
             run3 = False
-            game_over()
-        
-
-def countdown():
-    global text
-    sec = 30
-    while run:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-
-        font = pygame.font.SysFont("ariel", 30)
-        font2 = pygame.font.SysFont("ariel", 100)
-
-        text = font.render(str(sec), True, (255, 0, 0))
-        win.blit(text,(5,5))
-        time.sleep(1)
-        sec -= 1
-        score2 = score
-        if sec < 0 and score < 45:
-            text2 = font2.render("You Lose!", True, (0, 0, 0))
-            text2_w = text2.get_width()
-            win.blit(text2,(400 - text2_w / 2, 200))
-            sec += 1
-            run3 = False
-
-        if sec >= 0 and score >= 45:
-            text2 = font2.render("You Won!", True, (0, 0, 0))
-            text2_w = text2.get_width()
-            win.blit(text2,(400 - text2_w / 2, 200))
-            sec += 1
-            run3 = False
-
-        pygame.display.update()
-
-
-
-
-
-def red_dot_position():
-    global run3
-    global red_dot_x
-    global red_dot_y
-    run3 = True
-    last_score = 0
-    t_wait = 1.5
-    while run3:
-        last_score = score
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
-        win.blit(background,(0,0))
-        win.blit(red_dot,(red_dot_x,red_dot_y))               
-        red_dot_x = random.randint(0, 800)
-        red_dot_y = random.randint(0, 500)
-        t_wait -= 0.01
-        time.sleep(t_wait)
-        win.blit(background,(0,0))
-        win.blit(red_dot,(red_dot_x,red_dot_y)) 
-        click_check(last_score,score) 
-
-        pygame.display.update()
-
+            game_over()        
 
 
 def game_over():
@@ -366,25 +328,21 @@ def game_over():
                 pygame.quit()
                 exit()
 
-        font = pygame.font.SysFont("ariel", 100)
-        text = font.render("Game Over!", True, (0, 0, 0))
-        text2 = font.render(("Your Score Was "+str(score)), True, (0, 0, 0))
+        font2 = pygame.font.SysFont("ariel", 100)
+        text = font2.render("Game Over!", True, (0, 0, 0))
+        text2 = font2.render(("Your Score Was "+str(score)), True, (0, 0, 0))
         text_w = text.get_width()
         text2_w = text2.get_width()
         win.blit(text,(400 - text_w / 2,100))
         win.blit(text2,(400 - text2_w / 2, 200))
 
+new_user()
 
-#new_user()
-
-t1 = Thread(target=the_game)
-t2 = Thread(target=red_dot_position)
-t3 = Thread(target=click_check)
+t1 = Thread(target=red_dot_position)
+t2 = Thread(target=the_game)
 
 t1.start()
 t2.start()
-t3.start()
 
 t1.join()
 t2.join()
-t3.join()
