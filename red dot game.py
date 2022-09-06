@@ -40,6 +40,9 @@ redot_logo = pygame.transform.scale(redot_logo,(1250, 500))
 back_button = pygame.image.load("back-button.png")
 back_button = pygame.transform.scale(back_button,(50, 50))
 
+logout_button = pygame.image.load("logout-button.png")
+logout_button = pygame.transform.scale(logout_button,(300, 150))
+
 file = open('data-base.txt', "r")
 content = file.readlines()
 
@@ -53,13 +56,27 @@ red_dot_y = random.randint(25, 500)
 
 employees = []
 
-def separator(list):
+def add_user(list):
     for item in list:
         item += '\n'
         employees.append(item)
     file = open('data-base.txt', "a")
     file.writelines(employees)
     file.close()
+
+def replace_user(name_and_score,last_score, new_score):
+    file = open('data-base.txt', "r")
+    content = file.readlines()
+    new_text = ""
+    for text in content:
+        if text == name_and_score:
+            file = open('data-base.txt', "w")
+            new_text += text.replace(str(last_score),str(new_score))
+        else:
+            new_text += text
+    file.write(new_text)
+    
+
 
 def new_user():
     global user_text
@@ -115,7 +132,7 @@ def new_user():
                                 main_menu()
                             pygame.display.update
                         score_text = "0"
-                        separator([(user_text+'||'+score_text)])
+                        add_user([(user_text+'||'+score_text)])
                         
                         run4 = False
                         main_menu()
@@ -137,12 +154,12 @@ def new_user():
                                     name,score = line.strip().split("||")
                                     if name == user_text:
                                         score_text = score
-                                    else:
-                                        score_text = "0"
-                                separator([(user_text+'||'+score_text)])
-                                run4 = False
-                                main_menu()
-                                pygame.display.update
+                                        run4 = False
+                                        main_menu()
+                                    pygame.display.update
+                                score_text = "0"
+                                add_user([(user_text+'||'+score_text)])
+                               
         win.fill((150,200,255))
 
         if active:
@@ -177,13 +194,21 @@ def main_menu():
                 pygame.quit()
                 exit()
 
+            file = open('data-base.txt', "r")
+            content = file.readlines()
+            for line in content:
+                name,score3 = line.strip().split("||")
+                if name == user_text:
+                    best_score = score3
             font = pygame.font.SysFont("ariel", 30)
             text = font.render("Hello: "+ str(user_text), True, (0, 0, 0))
+            text2 = font.render("Best score: "+ str(best_score), True, (0, 0, 0))
             win.blit(background,(0,0))
             win.blit(rule_button,(700, 20))
             win.blit(settings_butoon,(730, 20))
             win.blit(redot_logo,(-225,60))
             win.blit(text,(20,20))
+            win.blit(text2,(20,40))
             win.blit(start_button,(360,450))
 
 
@@ -192,7 +217,23 @@ def main_menu():
                     mx, my = pygame.mouse.get_pos()
                     if mx <= 435 and mx >= 360:
                         if my >= 460 and my <= 495 :
+
+                            t1 = Thread(target=red_dot_position)
+                            t2 = Thread(target=the_game)
+
+                            t1.start()
+                            t2.start()
+
+                            t1.join()
+                            t2.join()
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mx, my = pygame.mouse.get_pos()
+                    if mx <= 767 and mx >= 740:
+                        if my >= 23 and my <= 47:
                             run5 = False
+                            settings()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
@@ -205,9 +246,34 @@ def main_menu():
 
         pygame.display.update()
 
+def settings():
+    run7 = True
+    while run7:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
 
+            font = pygame.font.SysFont("ariel", 100)
+            text = font.render("Settings:", True, (0, 0, 0))
+            win.blit(background,(0,0))
+            text_w = text.get_width()
+            logout_button_w = logout_button.get_width()
+            win.blit(text,(400 - text_w / 2,50))
+            win.blit(back_button,(700,25))
+            win.blit(logout_button,(400 - text_w / 2,100))
+            
+            mouse_buttons = pygame.mouse.get_pressed()
 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mx, my = pygame.mouse.get_pos()
+                    if my <= 78 and my >= 28:
+                        if mx >= 700 and mx <= 750:
+                            run2 = False
+                            main_menu()
 
+            pygame.display.update()
 
 
 def rule():
@@ -223,15 +289,15 @@ def rule():
 
 
             text = font2.render("Rules:", True, (0, 0, 0))
-            text2 = font.render("You got some seconds", True, (0, 0, 0))
-            text3 = font.render("to click amount of clicks", True, (0, 0, 0))
-            text4 = font.render("requested.", True, (0, 0, 0))
+            text2 = font.render("You have to click the red dot", True, (0, 0, 0))
+            text3 = font.render("every time it change position.", True, (0, 0, 0))
+            text4 = font.render("Else you lose.", True, (0, 0, 0))
             text5 = font.render("Good luck", True, (0, 0, 0))
 
 
 
             win.blit(background,(0,0))
-            win.blit(redot_icon,(15,150))
+            win.blit(redot_icon,(30,160))
             win.blit(back_button,(700,25))
             win.blit(text,(50,50))
             win.blit(text2,(55,125))
@@ -270,6 +336,7 @@ def red_dot_position():
         red_dot_y = random.randint(25, 500)
         win.blit(background,(0,0))
         win.blit(red_dot,(red_dot_x,red_dot_y))
+        pygame.display.update()
         last_score = score
         t_wait -= 0.01
         time.sleep(t_wait)
@@ -304,14 +371,14 @@ def the_game():
         
             pygame.display.update()
 
-def click_check(last_score,score):
+def click_check(last_score,p_score):
     run = True
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-        if score > last_score:
+        if p_score > last_score:
             run = False
             continue
         else:
@@ -335,14 +402,15 @@ def game_over():
         text2_w = text2.get_width()
         win.blit(text,(400 - text_w / 2,100))
         win.blit(text2,(400 - text2_w / 2, 200))
+        pygame.display.update()
+
+        file = open('data-base.txt', "r")
+        content = file.readlines()
+        for line in content:
+            name,score2 = line.strip().split("||")
+            if name == user_text:
+                if int(score) > int(score2):
+                    replace_user((user_text+'||'+score_text+'\n'),score2,score)
+
 
 new_user()
-
-t1 = Thread(target=red_dot_position)
-t2 = Thread(target=the_game)
-
-t1.start()
-t2.start()
-
-t1.join()
-t2.join()
