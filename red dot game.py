@@ -41,7 +41,7 @@ back_button = pygame.image.load("back-button.png")
 back_button = pygame.transform.scale(back_button,(50, 50))
 
 logout_button = pygame.image.load("logout-button.png")
-logout_button = pygame.transform.scale(logout_button,(300, 150))
+logout_button = pygame.transform.scale(logout_button,(250, 125))
 
 file = open('data-base.txt', "r")
 content = file.readlines()
@@ -226,6 +226,8 @@ def main_menu():
 
                             t1.join()
                             t2.join()
+
+            mouse_buttons = pygame.mouse.get_pressed()
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
@@ -261,7 +263,7 @@ def settings():
             logout_button_w = logout_button.get_width()
             win.blit(text,(400 - text_w / 2,50))
             win.blit(back_button,(700,25))
-            win.blit(logout_button,(400 - text_w / 2,100))
+            win.blit(logout_button,(400 - logout_button_w / 2,150))
             
             mouse_buttons = pygame.mouse.get_pressed()
 
@@ -272,6 +274,13 @@ def settings():
                         if mx >= 700 and mx <= 750:
                             run2 = False
                             main_menu()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    mx, my = pygame.mouse.get_pos()
+                    if my <= 275 and my >= 150:
+                        if mx >= (400 - logout_button_w / 2) and mx <= (400 - logout_button_w / 2+(logout_button_w)):
+                            run2 = False
+                            new_user()
 
             pygame.display.update()
 
@@ -395,22 +404,35 @@ def game_over():
                 pygame.quit()
                 exit()
 
-        font2 = pygame.font.SysFont("ariel", 100)
-        text = font2.render("Game Over!", True, (0, 0, 0))
-        text2 = font2.render(("Your Score Was "+str(score)), True, (0, 0, 0))
-        text_w = text.get_width()
-        text2_w = text2.get_width()
-        win.blit(text,(400 - text_w / 2,100))
-        win.blit(text2,(400 - text2_w / 2, 200))
-        pygame.display.update()
+            font2 = pygame.font.SysFont("ariel", 100)
+            text = font2.render("Game Over!", True, (0, 0, 0))
+            text2 = font2.render(("Your Score Was "+str(score)), True, (0, 0, 0))
+            text_w = text.get_width()
+            text2_w = text2.get_width()
+            back_button_w = back_button.get_width()
+            win.blit(text,(400 - text_w / 2,100))
+            win.blit(text2,(400 - text2_w / 2, 200))
+            win.blit(back_button,(400-back_button_w / 2,300))
+            pygame.display.update()
 
-        file = open('data-base.txt', "r")
-        content = file.readlines()
-        for line in content:
-            name,score2 = line.strip().split("||")
-            if name == user_text:
-                if int(score) > int(score2):
-                    replace_user((user_text+'||'+score_text+'\n'),score2,score)
+            file = open('data-base.txt', "r")
+            content = file.readlines()
+            for line in content:
+                name,score2 = line.strip().split("||")
+                if name == user_text:
+                    if int(score) > int(score2):
+                        replace_user((user_text+'||'+score_text+'\n'),score2,score)
+            
+            mouse_buttons = pygame.mouse.get_pressed()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:
+                        mx, my = pygame.mouse.get_pos()
+                        if my <= 350 and my >= 300 :
+                            if mx >= 400-back_button_w / 2 and mx <= 400-back_button_w / 2 + 50 :
+                                main_menu()
+                                
+            pygame.display.update()
 
 
 new_user()
